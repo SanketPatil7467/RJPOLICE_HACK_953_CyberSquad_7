@@ -36,30 +36,33 @@
                             <div class="text-center">
                                 <h1 class="h4 text-gray-900 mb-4">Employee Registration</h1>
                             </div>
-                            <form class="user">
+                            <form class="user" action="/register_user" method="post">
                                 <div class="form-group row">
                                     <div class="col-sm-6 mb-3 mb-sm-0">
-                                        <input type="text" class="form-control form-control-user" id="exampleFirstName"
+                                        <input type="text" class="form-control form-control-user" id="exampleFirstName" name="fname"
                                             placeholder="Employee's First Name">
                                     </div>
                                     <div class="col-sm-6">
                                         <input type="text" class="form-control form-control-user" id="exampleLastName"
-                                            placeholder="Employee's Last Name">
+                                            placeholder="Employee's Last Name" name="lname">
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <input type="email" class="form-control form-control-user" id="exampleInputEmail"
-                                        placeholder="Employee's Email Address">
+                                        placeholder="Employee's Email Address" name="email">
                                 </div>
 
                                 <div class="form-group">
                                     <input type="password" class="form-control form-control-user"
-                                        id="exampleInputPassword" placeholder="Admin Password">
+                                        id="exampleInputPassword" placeholder="Admin Password" name="password">
                                 </div>
 
-                                <a href="/register_user" class="btn btn-primary btn-user btn-block" type="submit">
+                                <!-- <a href="/register_user" class="btn btn-primary btn-user btn-block" type="submit">
                                     Register Employee
-                                </a>
+                                </a> -->
+
+                                <input style="margin-top: 3px;" type="submit" value="Register Employee" class="btn btn-primary btn-user btn-block">
+
                                 <hr>
                                 <a href="/" class="btn btn-google btn-user btn-block">
                                     <i class="fab fa-google fa-fw"></i> Back to Login Portal
