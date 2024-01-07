@@ -1,12 +1,69 @@
+import smtplib
 from flask import Flask, render_template, request, flash, redirect,url_for
 import json
+import random
 app = Flask(__name__)
 
 
 
+file_path = 'employee_db.txt'
+
 @app.route('/')
 def home_page_login():
-    return render_template('login.html')
+    return render_template('user_login.html')
+
+
+
+
+def sendMail(to_mail,otp):
+    s = smtplib.SMTP('smtp.gmail.com', 587)
+    s.starttls()
+    s.login("sanket.patil21@vit.edu", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+    message = f"Hello your otp is {otp}"
+    s.sendmail("sanket.patil21@vit.edu", to_mail, message)
+    s.quit()
+
+
+@app.route("/request_otp", methods=['POST'])
+def request_otp():
+    global mailID
+    usr_mail = request.form['mail_text']
+    mailID = usr_mail
+    successful_str = f"OTP sent to {usr_mail}"
+    invalid_mail = f"{usr_mail} not exists"
+    global otp;
+
+    
+    with open(file_path, 'r') as file:
+        loaded_dict = json.load(file)
+    
+    if usr_mail in loaded_dict.keys():
+        otp = random.randint(1000,9999)
+        sendMail(usr_mail,str(otp))
+        return render_template('user_login.html', text=successful_str)
+
+        
+    else:
+        return render_template('user_login.html',text=invalid_mail)
+
+
+@app.route("/validate_otp", methods=['POST'])
+def validate_otp():
+    usr_otp = request.form['otp_text']
+    print(mailID)
+    print(type(mailID))
+
+    if usr_otp == str(otp):
+        with open(file_path, 'r') as file:
+            loaded_dict = json.load(file)
+        person_name = loaded_dict[mailID]["fname"] + " " + loaded_dict[mailID]["lname"]
+        print(person_name)
+        return render_template('employee_dashboard.html', text=person_name)
+    else:
+        return render_template('user_login.html', text2="Invalid OTP")
+
+
+
 
 
 @app.route("/admin_login", methods=['POST'])
