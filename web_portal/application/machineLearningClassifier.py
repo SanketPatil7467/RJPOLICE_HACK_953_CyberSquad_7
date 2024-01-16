@@ -1,6 +1,6 @@
 import pandas as pd
 import pickle
-csv_file_path = "final_dataset.csv"
+csv_file_path = "test.csv"
 
 
 class MachineLearningClassifier:

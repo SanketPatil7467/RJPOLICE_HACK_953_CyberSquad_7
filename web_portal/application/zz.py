@@ -1,3 +1,4 @@
+import fundFlow as ff
 import json
 
 # with open('transactionsStatus.txt', 'r') as file:
@@ -45,5 +46,6 @@ print(len(loaded_dict["sanket.patil21@vit.edu"]))
 with open('zz.txt', 'w') as convert_file:
     convert_file.write(json.dumps(loaded_dict))
 
-
-
+obj = ff.FundFlow()
+dct = obj.rerturnFundFlowDictionary(9)
+print(dct)

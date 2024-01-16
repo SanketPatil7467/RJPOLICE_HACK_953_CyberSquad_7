@@ -4,6 +4,9 @@ import json
 import random
 import machineLearningClassifier as mlc
 import pandas as pd
+import pickle
+import os.path
+import fundFlow as ff
 app = Flask(__name__)
 
 
@@ -11,7 +14,7 @@ app = Flask(__name__)
 file_path = 'employee_db.txt'
 file_path_transaction_status_from_to = 'transactionsStatus.txt'
 
-csv_file_path = "final_dataset.csv"
+csv_file_path = "test.csv"
 
 @app.route('/')
 def home_page_login():
@@ -23,7 +26,7 @@ def home_page_login():
 def sendMail(to_mail,otp):
     s = smtplib.SMTP('smtp.gmail.com', 587)
     s.starttls()
-    s.login("sanket.patil21@vit.edu", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+    s.login("sanket.patil21@vit.edu", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
     message = f"Hello your otp is {otp}"
     s.sendmail("sanket.patil21@vit.edu", to_mail, message)
     s.quit()
@@ -184,7 +187,106 @@ def perfom_analysis():
     return render_template('admin_dashboard.html', total_records=no_of_transactions, valid_records=no_of_valid_transactions, fradulent_records=no_of_fraudulent_transactions, suspicious_records=no_of_suspicious_transactions, valid_records_percentage=str(percentage_of_valid_transactions)+"%", fradulent_records_percentage=str(percentage_of_fraudulent_transactions)+"%", suspicious_records_percentage=str(percentage_of_suspicious_transactions)+"%", temp_list=final_list)
 
 
+@app.route("/case_fund_trail", methods=['POST'])
+def case_fund_trail():
+    status = "Further transaction details not available"
+    case_no = request.form['case_number']
+    obj = ff.FundFlow()
+    trail_dict = obj.rerturnFundFlowDictionary(case_no)
+    lst = []
+    lst.append(str(case_no))
+    with open(file_path_transaction_status_from_to, 'r') as file:
+        loaded_dict = json.load(file)
+    lst.append(loaded_dict[str(case_no)]["From"])
+    lst.append(loaded_dict[str(case_no)]["To"])
+    lst.append(loaded_dict[str(case_no)]["Status"])
 
+    final_list = []
+    final_list.append(lst)
+
+    with open(file_path, 'r') as file:
+        emp_db_dict = json.load(file)
+    person_name = emp_db_dict[mailID]["fname"] + " " + emp_db_dict[mailID]["lname"]
+    print(person_name)
+    if(os.path.isfile(f"{str(case_no)}.csv")):
+        # If file exists
+        with open('model2.pkl', 'rb') as file:
+            loaded_model = pickle.load(file)
+        df = pd.read_csv(f"{str(case_no)}.csv")
+        transaction_ids = df['TransactionID'].tolist()
+        from_ids = df['CustomerID'].tolist()
+        to_ids = df['MerchantID'].tolist()
+        from_names = df['Name'].tolist()
+        transaction_amt = df['TransactionAmount'].tolist()
+        address = df['Address'].tolist()
+
+        columns_to_be_dropped = [
+            'TransactionID', 'MerchantID', 'CustomerID', 'Name', 'Age', 'Address']
+        df = df.drop(columns_to_be_dropped, axis=1)
+        df['Timestamp1'] = pd.to_datetime(df['Timestamp'])
+        df['Hour'] = df['Timestamp1'].dt.hour
+        df['LastLogin'] = pd.to_datetime(df['LastLogin'])
+        df['gap'] = (df['Timestamp1'] - df['LastLogin']).dt.days.abs()
+        df = df.drop(['FraudIndicator', 'Timestamp',
+                     'Timestamp1', 'LastLogin'], axis=1)
+
+        all_categories = ['Online', 'Other', 'Travel', 'Food', 'Retail']
+        for category in all_categories:
+            new_column_name = f'Category_{category}'
+            df[new_column_name] = (df['Category'] == category).astype(int)
+
+        df.drop('Category', axis=1, inplace=True)
+        fix_order = ['TransactionAmount', 'AnomalyScore', 'Amount', 'AccountBalance', 'SuspiciousFlag', 'Hour',
+                     'gap', 'Category_Food', 'Category_Online', 'Category_Other', 'Category_Retail', 'Category_Travel']
+
+        df = df.reindex(columns=fix_order)
+        probabilities = loaded_model.predict_proba(df)
+        probabilities_list = list(probabilities)
+        status_list = []
+
+        for i in range(len(probabilities_list)):
+            if probabilities_list[i][0] > probabilities_list[i][1]:
+                status_list.append("Valid")
+
+                if probabilities_list[i][0] > 0.97:
+                    status_list.append("Valid")
+                elif probabilities_list[i][0] > 0.96 and probabilities_list[i][0] < 0.97:
+                    status_list.append("Suspicious")
+                else:
+                    status_list.append("Fradulent")
+
+            else:
+                if probabilities_list[i][1] > 0.95:
+                    status_list.append("Fradulent")
+
+                else:
+                    status_list.append("Suspicious")
+
+        f_transaction_ids = []
+        f_from_ids = []
+        f_to_ids = []
+        f_from_names = []
+        f_transaction_amt = []
+        f_address = []
+        f_status = []
+
+        for i in range(len(transaction_ids)):
+            if status_list[i] != "Valid":
+                f_transaction_ids.append(transaction_ids[i])
+                f_from_ids.append(from_ids[i])
+                f_to_ids.append(to_ids[i])
+                f_from_names.append(from_names[i])
+                f_transaction_amt.append(transaction_amt[i])
+                f_address.append(address[i])
+                f_status.append(status_list[i])
+
+        f_combined_list = list(zip(f_transaction_ids,f_transaction_amt,f_from_ids,f_from_names,f_address,f_to_ids,f_status))
+
+        return render_template('case_resolver_page2.html', case_details=final_list, person_name=person_name, f_combined_list=f_combined_list,tree_data = trail_dict)
+
+    else:
+        # If file not exists
+        return render_template('case_resolver_page.html', case_details=final_list, person_name=person_name,status =status)
 
 
 
