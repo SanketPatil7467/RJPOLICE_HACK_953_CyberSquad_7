@@ -26,7 +26,7 @@ def home_page_login():
 def sendMail(to_mail,otp):
     s = smtplib.SMTP('smtp.gmail.com', 587)
     s.starttls()
-    s.login("sanket.patil21@vit.edu", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+    s.login("sanket.patil21@vit.edu", "sanket.patil21@23107467bansilalvit")
     message = f"Hello your otp is {otp}"
     s.sendmail("sanket.patil21@vit.edu", to_mail, message)
     s.quit()
@@ -54,6 +54,38 @@ def request_otp():
     else:
         return render_template('user_login.html',text=invalid_mail)
 
+
+
+
+
+@app.route("/fund_flow_by_clientid", methods=['POST'])
+def fund_flow_by_clientid():
+    return render_template('fund_trail_diagram_by_bankId.html')
+
+
+
+@app.route("/fund_flow_by_transactionId", methods=['POST'])
+def fund_flow_by_transactionId():
+    return render_template('fund_trail_diagram_by_transactionId.html')
+
+
+@app.route("/logout_employee", methods=['POST'])
+def logout_employee():
+    return render_template('user_login.html')
+
+@app.route("/fund_flow_by_location", methods=['POST'])
+def fund_flow_by_location():
+    df = pd.read_csv('9_locations.csv')
+    sample_geodata = df[["TransactionAmount", "Timestamp", "CustomerID", "Latitude_To",
+                     "Longitude_To", "MerchantID", "Address", "TransactionID"]].to_dict(orient='records')
+
+    return render_template('fund_trail_diagram_by_location.html', geodata=sample_geodata)
+
+
+def go_back():
+    # Use request.referrer to get the URL of the previous page
+    previous_page = request.referrer
+    return redirect(previous_page)
 
 @app.route("/validate_otp", methods=['POST'])
 def validate_otp():
@@ -100,97 +132,11 @@ def validate_otp():
         return render_template('user_login.html', text2="Invalid OTP")
 
 
-
-
-
-@app.route("/admin_login", methods=['POST'])
-def admin_login():
-    return render_template('admin_login.html')
-
-
-@app.route("/add_employee", methods=['POST'])
-def addEmployee():
-    return render_template('employers_registration.html')
-    # redirect(url_for('user_login.html'))
-
-
-@app.route("/back_to_admin_dashboard", methods=['POST'])
-def backToAdminDashboard():
-    return render_template('admin_dashboard.html')
-
-
-@app.route("/register_user", methods=['POST'])
-def registerUser():
-    success_status = "Employee Successfully added"
-    fname = request.form['fname']
-    lname = request.form['lname']
-    email = request.form['email']
-
-    file_path = 'employee_db.txt'
-    with open(file_path, 'r') as file:
-        loaded_dict = json.load(file)
-
-    if email in loaded_dict.keys():
-        success_status = "Employee already exists."
-        pass
-    else:
-        loaded_dict[email] = {"fname": fname, "lname":lname}
-    with open(file_path, 'w') as convert_file:
-        convert_file.write(json.dumps(loaded_dict))
-    return render_template('employers_registration.html',status = success_status)
-
-
-
-@app.route("/perform_analysis", methods=['POST'])
-def perfom_analysis():
-    my_obj = mlc.MachineLearningClassifier()
-    status_lst = my_obj.transactionStatus()
-    no_of_transactions = len(status_lst)
-    no_of_valid_transactions = status_lst.count("Valid")
-    no_of_fraudulent_transactions = status_lst.count("Fradulent")
-    no_of_suspicious_transactions = status_lst.count("Suspicious")
-
-    percentage_of_valid_transactions = (no_of_valid_transactions / no_of_transactions) * 100
-    percentage_of_fraudulent_transactions = (no_of_fraudulent_transactions / no_of_transactions) * 100
-    percentage_of_suspicious_transactions = (no_of_suspicious_transactions / no_of_transactions) * 100
-
-
-    df = pd.read_csv(csv_file_path)
-    columns_to_be_dropped = ['FraudIndicator', 'Category', 'AnomalyScore', 'Age', 'Address', 'AccountBalance', 'LastLogin', 'SuspiciousFlag']
-    df = df.drop(columns_to_be_dropped, axis=1)
-    df['Record Status'] = status_lst
-    final_list = df.values.tolist()
-
-    transaction_from_to_with_status = my_obj.returnTransactionIDWithStatusAndFromTo()
-    keys_to_delete = [key for key,
-                      value in transaction_from_to_with_status.items() if value["Status"] == "Valid"]
-
-    for key in keys_to_delete:
-        del transaction_from_to_with_status[key]
-
-    with open(file_path_transaction_status_from_to, 'r') as file:
-        loaded_dict = json.load(file)
-    
-    keys_list = list(transaction_from_to_with_status.keys())
-
-    for i in keys_list:
-        if i in loaded_dict.keys():
-            print("Transaction already exists")
-        else:
-            loaded_dict[i] = transaction_from_to_with_status[i]
-
-
-
-    with open(file_path_transaction_status_from_to, 'w') as convert_file:
-        convert_file.write(json.dumps(loaded_dict))
-
-    return render_template('admin_dashboard.html', total_records=no_of_transactions, valid_records=no_of_valid_transactions, fradulent_records=no_of_fraudulent_transactions, suspicious_records=no_of_suspicious_transactions, valid_records_percentage=str(percentage_of_valid_transactions)+"%", fradulent_records_percentage=str(percentage_of_fraudulent_transactions)+"%", suspicious_records_percentage=str(percentage_of_suspicious_transactions)+"%", temp_list=final_list)
-
-
 @app.route("/case_fund_trail", methods=['POST'])
 def case_fund_trail():
     status = "Further transaction details not available"
     case_no = request.form['case_number']
+    
     obj = ff.FundFlow()
     trail_dict = obj.rerturnFundFlowDictionary(case_no)
     lst = []
@@ -206,7 +152,8 @@ def case_fund_trail():
 
     with open(file_path, 'r') as file:
         emp_db_dict = json.load(file)
-    person_name = emp_db_dict[mailID]["fname"] + " " + emp_db_dict[mailID]["lname"]
+    person_name = emp_db_dict[mailID]["fname"] + \
+        " " + emp_db_dict[mailID]["lname"]
     print(person_name)
     if(os.path.isfile(f"{str(case_no)}.csv")):
         # If file exists
@@ -280,13 +227,104 @@ def case_fund_trail():
                 f_address.append(address[i])
                 f_status.append(status_list[i])
 
-        f_combined_list = list(zip(f_transaction_ids,f_transaction_amt,f_from_ids,f_from_names,f_address,f_to_ids,f_status))
+        f_combined_list = list(zip(f_transaction_ids, f_transaction_amt,
+                               f_from_ids, f_from_names, f_address, f_to_ids, f_status))
 
-        return render_template('case_resolver_page2.html', case_details=final_list, person_name=person_name, f_combined_list=f_combined_list,tree_data = trail_dict)
+        return render_template('case_resolver_page2.html', case_details=final_list, person_name=person_name, f_combined_list=f_combined_list, tree_data=trail_dict)
 
     else:
         # If file not exists
-        return render_template('case_resolver_page.html', case_details=final_list, person_name=person_name,status =status)
+        return render_template('case_resolver_page.html', case_details=final_list, person_name=person_name, status=status)
+
+
+
+@app.route("/admin_login", methods=['POST'])
+def admin_login():
+    return render_template('admin_login.html')
+
+
+@app.route("/add_employee", methods=['POST'])
+def addEmployee():
+    return render_template('employers_registration.html')
+    # redirect(url_for('user_login.html'))
+
+
+@app.route("/back_to_admin_dashboard", methods=['POST'])
+def backToAdminDashboard():
+    return render_template('admin_dashboard.html')
+
+
+@app.route("/register_user", methods=['POST'])
+def registerUser():
+    success_status = "Employee Successfully added"
+    fname = request.form['fname']
+    lname = request.form['lname']
+    email = request.form['email']
+
+    file_path = 'employee_db.txt'
+    with open(file_path, 'r') as file:
+        loaded_dict = json.load(file)
+
+    if email in loaded_dict.keys():
+        success_status = "Employee already exists."
+        pass
+    else:
+        loaded_dict[email] = {"fname": fname, "lname":lname}
+    with open(file_path, 'w') as convert_file:
+        convert_file.write(json.dumps(loaded_dict))
+    return render_template('employers_registration.html',status = success_status)
+
+
+def loading():
+    return render_template('admin_dashboard.html',loading=True)
+
+
+@app.route("/perform_analysis", methods=['POST'])
+def perfom_analysis():
+    my_obj = mlc.MachineLearningClassifier()
+    status_lst = my_obj.transactionStatus()
+    no_of_transactions = len(status_lst)
+    no_of_valid_transactions = status_lst.count("Valid")
+    no_of_fraudulent_transactions = status_lst.count("Fradulent")
+    no_of_suspicious_transactions = status_lst.count("Suspicious")
+
+    percentage_of_valid_transactions = (no_of_valid_transactions / no_of_transactions) * 100
+    percentage_of_fraudulent_transactions = (no_of_fraudulent_transactions / no_of_transactions) * 100
+    percentage_of_suspicious_transactions = (no_of_suspicious_transactions / no_of_transactions) * 100
+
+
+    df = pd.read_csv(csv_file_path)
+    columns_to_be_dropped = ['FraudIndicator', 'Category', 'AnomalyScore', 'Age', 'Address', 'AccountBalance', 'LastLogin', 'SuspiciousFlag']
+    df = df.drop(columns_to_be_dropped, axis=1)
+    df['Record Status'] = status_lst
+    final_list = df.values.tolist()
+
+    transaction_from_to_with_status = my_obj.returnTransactionIDWithStatusAndFromTo()
+    keys_to_delete = [key for key,
+                      value in transaction_from_to_with_status.items() if value["Status"] == "Valid"]
+
+    for key in keys_to_delete:
+        del transaction_from_to_with_status[key]
+
+    with open(file_path_transaction_status_from_to, 'r') as file:
+        loaded_dict = json.load(file)
+    
+    keys_list = list(transaction_from_to_with_status.keys())
+
+    for i in keys_list:
+        if i in loaded_dict.keys():
+            print("Transaction already exists")
+        else:
+            loaded_dict[i] = transaction_from_to_with_status[i]
+
+
+
+    with open(file_path_transaction_status_from_to, 'w') as convert_file:
+        convert_file.write(json.dumps(loaded_dict))
+
+    return render_template('admin_dashboard.html', total_records=no_of_transactions, valid_records=no_of_valid_transactions, fradulent_records=no_of_fraudulent_transactions, suspicious_records=no_of_suspicious_transactions, valid_records_percentage=str(percentage_of_valid_transactions)+"%", fradulent_records_percentage=str(percentage_of_fraudulent_transactions)+"%", suspicious_records_percentage=str(percentage_of_suspicious_transactions)+"%", temp_list=final_list)
+
+
 
 
 
