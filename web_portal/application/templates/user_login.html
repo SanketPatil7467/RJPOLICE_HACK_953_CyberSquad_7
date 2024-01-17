@@ -19,10 +19,26 @@
 
     <!-- Custom styles for this template-->
     <link href="static/assets/css/sb-admin-2.min.css" rel="stylesheet">
+    <style>
+        .photo-background-section {
+            background-image: url('https://i.ibb.co/3FwyFNf/Background-mian.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+    </style>
+
 
 </head>
 
-<body class="bg-gradient-primary">
+<body class="photo-background-section">
+    <div id="loading">
+        <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+        <p>Loading...</p>
+    </div>
+
 
     <div class="container">
 
@@ -35,63 +51,71 @@
                     <div class="card-body p-0">
                         <!-- Nested Row within Card Body -->
                         <div class="row">
-                            <div class="col-lg-6 d-none d-lg-block bg-login-image"></div>
-                            <div class="col-lg-6">
+                            <div class="col-lg-6 d-none d-lg-block">
+                                <img src="https://i.ibb.co/nQsrjk5/logo.png"
+                                    style="width: 100%; height: 100%; object-fit: cover; max-width: 600px; max-height: 800px;">
+                            </div>
+                            <div class="col-lg-6  bg-white">
                                 <div class="p-5">
                                     <div class="text-center">
-                                        <h1 class="h4 text-gray-900 mb-4">Investigator Registration</h1>
+                                        <h1 class="h4 text-black"><b>INVESTIGATOR LOGIN</b></h1>
                                     </div>
 
-                                        
-
-
-                                        
-                                        <form class="user" id="form_id" action="/request_otp" method="post">
-                                            <div class="form-group">
-                                                <input type="email" class="form-control form-control-user" id="exampleInputEmail" aria-describedby="emailHelp"
-                                                    placeholder="Enter Email Address..." name="mail_text">
-                                            </div>
-
-
-                                            <a class="btn btn-primary btn-user btn-block" href="#" onclick="document.getElementById('form_id').submit(); return false;">
-                                                Request OTP
-                                            </a>
-                                    
-
-                                        </form>
-                                        <p style="text-align: center;"><i>{{ text }}</i></p>
-
-                                        <form class="user" id="form_id2" action="/validate_otp" method="post">
-                                            <div class="form-group">
-                                                <input type="number" class="form-control form-control-user" aria-describedby="emailHelp"
-                                                    placeholder="Enter OTP ..." name="otp_text">
-                                            </div>
-                                        
-                                        
-                                            <a class="btn btn-primary btn-user btn-block" href="#"
-                                                onclick="document.getElementById('form_id2').submit(); return false;">
-                                                Validate OTP
-                                            </a>
-                                        
-                                        
-                                        </form>
-                                        <p style="text-align: center; color: red;"><i>{{ text2 }}</i></p>
 
 
 
 
+                                    <form class="user" id="form_id" action="/request_otp" method="post">
+                                        <div class="form-group">
+                                            <input style="margin-top: 60px;" type="email" class="form-control form-control-user"
+                                                id="exampleInputEmail" aria-describedby="emailHelp"
+                                                placeholder="Enter Email Address..." name="mail_text">
+                                        </div>
 
-                                        <!-- <div class="form-group">
+
+                                        <a id="request_otp_button" class="btn btn-primary btn-user btn-block" href="#"
+                                            onclick="document.getElementById('form_id').submit(); return false;">
+                                            Request OTP
+                                        </a>
+
+
+
+                                    </form>
+                                    <p style="text-align: center;"><i>{{ text }}</i></p>
+
+                                    <form class="user" id="form_id2" action="/validate_otp" method="post">
+                                        <div class="form-group">
+                                            <input type="number" class="form-control form-control-user"
+                                                aria-describedby="emailHelp" placeholder="Enter OTP ..."
+                                                name="otp_text">
+                                        </div>
+
+
+                                        <a class="btn btn-primary btn-user btn-block" href="#"
+                                            onclick="document.getElementById('form_id2').submit(); return false;">
+                                            Validate OTP
+                                        </a>
+
+
+                                    </form>
+                                    <p style="text-align: center; color: red;"><i>{{ text2 }}</i></p>
+
+
+
+
+
+                                    <!-- <div class="form-group">
                                             <input type="password" class="form-control form-control-user"
                                                 id="exampleInputPassword" placeholder="Password">
                                         </div> -->
-                                        <hr>
+                                    <hr>
 
-                                        <form class="user" action="/admin_login" method="post">
-                                            <input style="margin-top: 3px;" type="submit" value="Continue as Admin" class="btn btn-google btn-user btn-block">
-                                            
-                                        </form>
-                                            <hr>
+                                    <form class="user" action="/admin_login" method="post">
+                                        <input style="margin-top: 3px;" type="submit" value="Continue as Admin"
+                                            class="btn btn-google btn-user btn-block">
+
+                                    </form>
+                                    <hr>
 
                                 </div>
                             </div>
@@ -105,6 +129,8 @@
 
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
     <!-- Bootstrap core JavaScript-->
     <script src="static/assets/vendor/jquery/jquery.min.js"></script>
     <script src="static/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
@@ -114,6 +140,16 @@
 
     <!-- Custom scripts for all pages-->
     <script src="static/assets/js/sb-admin-2.min.js"></script>
+
+    <script>
+        // Show loading screen on form submission
+        $(document).ready(function () {
+            $('#request_otp_button').click(function () {
+                $('#loading').show();
+            });
+        });
+    </script>
+
 
 
 </body>
