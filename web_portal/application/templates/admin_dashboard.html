@@ -64,9 +64,13 @@
 
             <!-- Nav Item - Pages Collapse Menu -->
             <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-fw fa-table"></i>
-                    <span>Add Data</span></a>
+                <form id="add_dta" action="/add_data" method="post">
+                    <a class="nav-link" href="#" onclick="document.getElementById('add_dta').submit(); return false;">
+                        <i class="fas fa-fw fa-table"></i>
+                        <span>Add Data</span>
+                    </a>
+            
+                </form>
             </li>
 
             <!-- Divider -->
@@ -102,7 +106,7 @@
                     </a> -->
                     <a class="nav-link" href="#" onclick="document.getElementById('add_emp').submit(); return false;">
                         <i class="fas fa-fw fa-table"></i>
-                        <span>Add Employee</span>
+                        <span>Add Investigator</span>
                     </a>
                     
                 </form>

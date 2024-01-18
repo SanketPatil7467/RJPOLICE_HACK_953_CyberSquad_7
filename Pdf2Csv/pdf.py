@@ -12,6 +12,7 @@ import cv2
 from ultralytics import YOLO
 
 try:
+    print("Sanket")
     # Load the image
     image = cv2.imread("pages\page0.jpg")
     if image is None:
@@ -23,22 +24,24 @@ try:
 
     # Perform prediction and get results
     results = model.predict(source=image, save=False , conf=0.5 )
+    print(results)
 
     # Access the bounding box coordinates for each detected table
     if len(results) > 0:
+        print("Hello")
         first_result = results[0]  # Assuming the first item in the list contains the results
         bounding_boxes = first_result.boxes.xyxy
-        # print(bounding_boxes)
+        print(bounding_boxes)
     else:
         print("No tables detected.")
 
 except Exception as e:
     print(str(e))
 for l in bounding_boxes:
-  x_1 = int(l[0])
-  y_1 = int(l[1])
-  x_2 = int(l[2])
-  y_2 = int(l[3])
+    x_1 = int(l[0])
+    y_1 = int(l[1])
+    x_2 = int(l[2])
+    y_2 = int(l[3])
 im = cv2.imread('pages\page0.jpg')
 cv2.imwrite('ext_im.jpg',im[y_1:y_2,x_1:x_2])
 from paddleocr import PaddleOCR , draw_ocr

@@ -1,4 +1,5 @@
 import smtplib
+import time
 from flask import Flask, render_template, request, flash, redirect,url_for
 import json
 import random
@@ -21,12 +22,42 @@ def home_page_login():
     return render_template('user_login.html')
 
 
+@app.route('/add_data', methods=['POST'])
+def add_data():
+    return render_template('add_data.html')
+
+
+@app.route('/upload_pdf', methods=['POST'])
+def upload_pdf():
+    
+    time.sleep(5)
+    if 'pdf_file' not in request.files:
+        return "No file part"
+
+    file = request.files['pdf_file']
+
+    if file.filename == '':
+        return "No selected file"
+
+    if file:
+        # Save the uploaded file in the same directory as the script
+        file_path = os.path.join(os.path.dirname(
+            os.path.abspath(__file__)), file.filename)
+        
+
+        # Print the file path on the terminal
+        # print("Uploaded PDF file path:", file_path)
+        csv_file_path = str(file_path).replace(".pdf", ".csv")
+        df = pd.read_csv(csv_file_path)
+        combine_list = df.values.tolist()
+
+    return render_template('add_data.html', combine_list=combine_list)
 
 
 def sendMail(to_mail,otp):
     s = smtplib.SMTP('smtp.gmail.com', 587)
     s.starttls()
-    s.login("sanket.patil21@vit.edu", "sanket.patil21@23107467bansilalvit")
+    s.login("sanket.patil21@vit.edu", "sanky@2310patiledu")
     message = f"Hello your otp is {otp}"
     s.sendmail("sanket.patil21@vit.edu", to_mail, message)
     s.quit()
